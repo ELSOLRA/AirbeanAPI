@@ -205,7 +205,7 @@ app.post("/api/user/login", async (req, res) => {
         username : username,
         password : password
     }
-    
+
     // Validera username
 
     try{
@@ -266,6 +266,68 @@ function orderNr() {
 
     return result;
 }
+
+// ###################################################################################
+
+const validateOrders = async (req, res, next) => {
+  const menu = await menuDb.find({});
+  const { orders } = req.body;
+
+ 
+  if (!Array.isArray(orders)) {
+    return res.status(400).json({ error: "Orders should be an array" });
+  }
+
+  
+  const invalidOrders = orders.filter((order) => {
+    const foundItem = menu.find(
+      (item) => item.title === order.name && item.price === order.price
+    );
+    return !foundItem;
+  });
+
+  if (invalidOrders.length > 0) {
+    return res
+      .status(400)
+      .json({ error: "Invalid orders detected", invalidOrders });
+  }
+
+  next();
+};
+
+// POST Orders
+app.post("/api/bean/order", validateOrders, async (req, res) => {
+  const { orders } = req.body;
+
+  const timestamp = new Date();
+
+  // ETA  mellan 7 och 21 min
+  const randomETA = Math.floor(Math.random() * 13) + 7;
+
+  
+  const orderNumber = uuidv4();
+
+
+  ordersDb.insert(
+    { orders, eta: randomETA, orderNr: orderNumber, timestamp },
+    (err) => {
+      if (err) {
+        return res
+          .status(500)
+          .json({ error: "Failed to save order to database" });
+      }
+
+
+      res.json({
+        eta: randomETA,
+        orderNr: orderNumber,
+      });
+    }
+  );
+});
+
+// #############################################################################
+
 
 //Starta servern
 // const server = app.listen(PORT, () => console.log(`Server listening at port ${PORT}...`));

@@ -11,77 +11,15 @@ const fs = require('fs').promises;
 
 //Databas
 const db = new Datastore({ filename: "database.db", autoload: true });
-const menuDb = new Datastore ({ filename: "menu.db", autoload: true })
+const menuDb = new Datastore ({ filename: "menu.db", autoload: true });
+const ordersDb = new Datastore ({ filename: "orders.db", autoload: true });
 const userId = uuidv4();
 app.use(express.json());
 
-
-
-/* async function initializeDatabase() {
-  try {
-    // Check if any documents exist in the database
-    const count = await menuDb.count({});
-    if (count === 0) {
-      // Default menu data object
-      const defaultMenuData = {
-        menu: [
-          {
-            id: 1,
-            title: 'Bryggkaffe',
-            desc: 'Bryggd på månadens bönor.',
-            price: 39,
-          },
-          {
-            id: 2,
-            title: 'Caffè Doppio',
-            desc: 'Bryggd på månadens bönor.',
-            price: 49,
-          },
-          {
-            id: 3,
-            title: 'Caffè ADD',
-            desc: 'Bryggd på månadens bönor.',
-            price: 49,
-          },
-          // Add other menu items here
-        ],
-      };
-
-      // Insert default menu data into the database
-      await menuDb.insert(defaultMenuData.menu);
-      console.log('Default data inserted into the database.');
-    } else {
-      console.log('Database already contains data. Skipping initialization.');
-    }
-  } catch (err) {
-    console.error('Error initializing database:', err);
-  }
-}
-
-// Call the initialization function before starting the server
-initializeDatabase().then(() => {
-  // GET MENU
-  app.get('/api/beans', async (req, res) => {
-    try {
-      // Fetch all documents from the 'menu' collection
-      const docs = await menuDb.find({});
-      res.status(200).json({ success: true, menu: docs });
-    } catch (err) {
-      res.status(500).json({ success: false, message: err });
-    }
-  }); */
-
- 
-
-
-
-
-
+let loggedId; 
 
 
 //   ###########################################################################################################
-
-
 
 async function initializeDatabase() {
     try {
@@ -103,7 +41,6 @@ async function initializeDatabase() {
         console.error('Error checking database count or initializing database:', err);
     }
 }
-
 
 // Call the initialization function before starting the server
 initializeDatabase().then(() => {
@@ -161,45 +98,45 @@ app.get("/api/beans/order/status/:orderNr", async (req, res) => {
 
 
 // POST Orders
-app.post("/api/beans", async (req, res) => {
 
-    // "order": [
-    //   {
-    //     "name": "string",
-    //     "price": 0
-    //   }
-    // ]
-
-    // res.status(200).json({
-    //     eta: 0,
-    //     orderNr: "string",
-    //   });
+app.post("/api/bean/order", async (req, res) => {
+  
 })
+
 
 // POST SIGNUP
 app.post("/api/user/signup",  async (req, res) => {
-    const { username,password} = req.body;
-  
-
+    const { username, password} = req.body;
+    const usernameExists = await db.findOne(user => db.username === username);
     const newSignup = {
-       userId: userId,
-       username: username,
-       password: password
-    }
-    
-    // Validera username
+      userId: userId,
+      username: username,
+      password: password
+   }
 
+    if (usernameExists) {
+      res.status(400).json({ success: false, message: "User name already exists" });
+      return;
+    } 
     try{
         await db.insert(newSignup)
-        res.status(201).json({"success": true})
+        res.status(201).json({ success: true})
     }catch (e){
          res.status(500).send("server crashed")
     }
-})
+  });
 
+    
+    
+    // Validera username
+
+
+//--------------------------------------------
+
+//------------------------------------------------------------------
 // POST Login
 app.post("/api/user/login", async (req, res) => {
-    const { username,password} = req.body;
+    const { username, password } = req.body;
 
     const newLogin = {
         username : username,
@@ -210,15 +147,12 @@ app.post("/api/user/login", async (req, res) => {
 
     try{
         const loggedUser = await db.find( {username, password}) 
-        console.log(loggedUser);
+        
+        loggedId = loggedUser[0].userId;
+        
         
         console.log(newLogin)
-        res.status(201).json({
-            "success": true,
-            // Generera token
-            "token": "string"
-            }
-)
+        res.status(201).json({ success: true })
     }catch (e){
          res.status(500).send("server crashed")
     }
@@ -226,7 +160,7 @@ app.post("/api/user/login", async (req, res) => {
 
 //GET Hämta en inloggad användares orderhistorik
 
-app.get("/api/user/history", async (req, res) => {
+app.get("/api/user/history/:userId", async (req, res) => {
     // Kolla ifall en token finns i headers:
     try {
         res.status(201).json({
@@ -244,7 +178,6 @@ app.get("/api/user/history", async (req, res) => {
     console.log(error); 
     }
 })
-
 
 
 //Generera tid vid  beställning
@@ -269,7 +202,7 @@ function orderNr() {
 
 // ###################################################################################
 
-const validateOrders = async (req, res, next) => {
+/* const validateOrders = async (req, res, next) => {
   const menu = await menuDb.find({});
   const { orders } = req.body;
 
@@ -324,7 +257,7 @@ app.post("/api/bean/order", validateOrders, async (req, res) => {
       });
     }
   );
-});
+}); */
 
 // #############################################################################
 

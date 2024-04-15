@@ -1,0 +1,5 @@
+{"orders":[{"name":"Cappuccino","price":49}],"eta":7,"orderNr":"WQF4734338","timestamp":{"$$date":1713167762866},"_id":"0YOUE1qursWr6kuj"}
+{"orders":[{"name":"Cappuccino","price":49}],"eta":15,"orderNr":"YIR9078065","timestamp":{"$$date":1713167701594},"userId":"f028e0f2-3607-4089-bf26-ce64cfc2f156","_id":"0ldXuAiIfAWk7PuI"}
+{"orders":[{"name":"Cappuccino","price":49}],"eta":10,"orderNr":"VPG4631194","timestamp":{"$$date":1713167904440},"loggedId":"1ecb6e14-c2d5-49ea-ad70-cfef249eba46","_id":"Cmlpuf173TudYvL4"}
+{"orders":[{"name":"Cappuccino","price":49}],"eta":16,"orderNr":"GCB2740205","timestamp":{"$$date":1713167537119},"_id":"EqI6btlbUFTd10K9"}
+{"eta":14,"orderNr":"CWX2321418","timestamp":{"$$date":1713166724312},"_id":"u6u3ubJ390ydSzcy"}

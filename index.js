@@ -18,7 +18,6 @@ app.use(express.json());
 
 let loggedId; 
 
-
 //   ###########################################################################################################
 
 async function initializeDatabase() {
@@ -56,24 +55,6 @@ initializeDatabase().then(() => {
   });
 })
 
-//---------------------------------------------------------------------------------------
-
-//-----------!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-///----------------------------------------------------------------
-
-// GET MENU
-/* app.get("/api/beans", async (req, res) => {
-    try {
-    const docs = await db.find({});
-    //    console.log(docs); 
-       res.status(200).json(docs);
-
-    } catch (err){
-        res.status(500).json({ success: false, message: err });
-    }
-}); */
-
 // GET STATUS/ Ordernummer
 app.get("/api/beans/order/status/:orderNr", async (req, res) => {
   const orderNr = req.params.orderNr;
@@ -95,14 +76,6 @@ app.get("/api/beans/order/status/:orderNr", async (req, res) => {
     res.status(500).send("server crashed");
   }
 });
-
-
-// POST Orders
-
-app.post("/api/bean/order", async (req, res) => {
-  
-})
-
 
 // POST SIGNUP
 app.post("/api/user/signup",  async (req, res) => {
@@ -126,31 +99,18 @@ app.post("/api/user/signup",  async (req, res) => {
     }
   });
 
-    
-    
-    // Validera username
-
-
-//--------------------------------------------
-
-//------------------------------------------------------------------
 // POST Login
 app.post("/api/user/login", async (req, res) => {
     const { username, password } = req.body;
-
     const newLogin = {
         username : username,
         password : password
     }
 
     // Validera username
-
     try{
         const loggedUser = await db.find( {username, password}) 
-        
         loggedId = loggedUser[0].userId;
-        
-        
         console.log(newLogin)
         res.status(201).json({ success: true })
     }catch (e){
@@ -159,7 +119,6 @@ app.post("/api/user/login", async (req, res) => {
 })
 
 //GET Hämta en inloggad användares orderhistorik
-
 app.get("/api/user/history/:userId", async (req, res) => {
     // Kolla ifall en token finns i headers:
     try {
@@ -202,17 +161,19 @@ function orderNr() {
 
 // ###################################################################################
 
-/* const validateOrders = async (req, res, next) => {
+  const validateOrders = async (req, res, next) => {
+    try {
   const menu = await menuDb.find({});
-  const { orders } = req.body;
+  console.log(menu);
+  const { details } = req.body;
+  console.log(req);
 
  
-  if (!Array.isArray(orders)) {
+  if (!details || !details.order || !Array.isArray(details.order)) {
     return res.status(400).json({ error: "Orders should be an array" });
   }
 
-  
-  const invalidOrders = orders.filter((order) => {
+  const invalidOrders = details.order.filter((order) => {
     const foundItem = menu.find(
       (item) => item.title === order.name && item.price === order.price
     );
@@ -225,24 +186,24 @@ function orderNr() {
       .json({ error: "Invalid orders detected", invalidOrders });
   }
 
+  req.body.orders = details.order;
   next();
+} catch (error) {
+  console.error('Error in validateOrders:', error);
+  return res.status(500).json({ error: 'Internal server error' });
+}
 };
-
+ 
 // POST Orders
-app.post("/api/bean/order", validateOrders, async (req, res) => {
+app.post("/api/bean/order",  validateOrders, async (req, res) => {
+  try{
   const { orders } = req.body;
-
   const timestamp = new Date();
-
-  // ETA  mellan 7 och 21 min
   const randomETA = Math.floor(Math.random() * 13) + 7;
+  const orderNumber = orderNr();
 
-  
-  const orderNumber = uuidv4();
-
-
-  ordersDb.insert(
-    { orders, eta: randomETA, orderNr: orderNumber, timestamp },
+  await ordersDb.insert(
+    { orders, eta: randomETA, orderNr: orderNumber, timestamp, loggedId: loggedId },
     (err) => {
       if (err) {
         return res
@@ -250,21 +211,20 @@ app.post("/api/bean/order", validateOrders, async (req, res) => {
           .json({ error: "Failed to save order to database" });
       }
 
-
       res.json({
         eta: randomETA,
         orderNr: orderNumber,
       });
     }
   );
-}); */
+
+} catch (error) {
+  console.error('Error in POST /api/bean/order:', error);
+  return res.status(500).json({ error: 'Internal server error' });
+}
+}); 
 
 // #############################################################################
-
-
 //Starta servern
-// const server = app.listen(PORT, () => console.log(`Server listening at port ${PORT}...`));
-
 const server = app.listen(PORT, () =>
-console.log(`Server listening at port ${PORT}...`)
-);
+console.log(`Server listening at port ${PORT}...`));

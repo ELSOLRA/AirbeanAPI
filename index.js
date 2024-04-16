@@ -1,12 +1,10 @@
-
+require('dotenv').config();
+const URL = process.env.API_URL
+const PORT = process.env.PORT 
 const express = require("express");
 const Datastore = require("nedb-promise");
-const jwt = require('jsonwebtoken');
-// const menu = require("./menu");
 const app = express();
-const PORT = process.env.PORT || 3000;
 const { v4: uuidv4} = require('uuid');
-const { log } = require("console");
 const fs = require('fs').promises;
 const moment = require('moment');
 
@@ -18,13 +16,6 @@ const userId = uuidv4();
 app.use(express.json());
 
 let loggedId; 
-
-//Generera tid vid  beställning
-
-
-
-
-// Start countdown and send countdown value to frontend
 
 //Generera ordernummer vid beställning
 function orderNr() {
@@ -84,9 +75,7 @@ app.get("/api/beans/order/status/:orderNr", async (req, res) => {
   const orderNr = req.params.orderNr;
   try {
     const orders = await ordersDb.find({ orderNr: orderNr })
-    // console.log(order);
     const order = orders[0];
-    // console.log(timestamp, eta); 
     const remainingTime = calculateRemainingTime(order);
     console.log(remainingTime) 
   
@@ -100,7 +89,7 @@ app.get("/api/beans/order/status/:orderNr", async (req, res) => {
         return;
       }
   
-      res.status(200).json({ success: true });
+      res.status(200).json({ eta : remainingTime });
       
     } catch (e) {
     res.status(500).send("server crashed");
@@ -110,7 +99,8 @@ app.get("/api/beans/order/status/:orderNr", async (req, res) => {
 // POST SIGNUP
 app.post("/api/user/signup",  async (req, res) => {
     const { username, password} = req.body;
-    const usernameExists = await db.findOne(user => db.username === username);
+    const usernameExists = await db.findOne({username: username});
+    console.log(usernameExists)  
     const newSignup = {
       userId: userId,
       username: username,
@@ -150,23 +140,39 @@ app.post("/api/user/login", async (req, res) => {
 
 //GET Hämta en inloggad användares orderhistorik
 app.get("/api/user/history/:userId", async (req, res) => {
-    // Kolla ifall en token finns i headers:
-    try {
-        res.status(201).json({
-  "success": true,
-  "orderHistory": [
-    {
-      "total": 0,
-      "orderNr": "string",
-      "orderDate": "string"
+  try {
+  const userId = req.params.userId;
+  if(!userId) {
+    return res.status(400).json({error: 'User Id required'});
+  }
+    const userOrders = await ordersDb.find({ loggedId: userId });
+    const ordersAmount =  userOrders.length
+
+    if (userOrders.length === 0) {
+      return res.status(404).json({ error: "No orders found for the user" });
     }
-  ]
-}
-)
-    } catch (error) {
-    console.log(error); 
-    }
-})
+
+    
+    const orderHistory  = userOrders.map((order) => ({
+      orderNr : order.orderNr ,
+      timestamp : moment(order.timestamp).format('YYYY-MM-DD'),
+      total : order.orders.reduce((sum, item) => sum + item.price, 0)
+    }));
+
+  res.status(200).json({ 
+    success: true, 
+    orderHistory: orderHistory.map(order => ({
+      total: order.total,
+      orderNr: order.orderNr,
+      orderDate: order.timestamp
+    }))
+  });
+
+  } catch (error) {
+    console.error("Error fetching user orders:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 // ###################################################################################
 
@@ -179,7 +185,7 @@ app.get("/api/user/history/:userId", async (req, res) => {
         return res.status(400).json({ error: "Orders should be an array" });
       }
 
-      const invalidOrders = details.order.filter((order) => {
+      const invalidOrders =  details.order.filter((order) => {
         const foundItem = menu.find(
           (item) => item.title === order.name && item.price === order.price
         );
@@ -205,14 +211,9 @@ app.post("/api/bean/order",  validateOrders, async (req, res) => {
   const { orders } = req.body;
   const timestamp = new Date();
   const orderNumber = orderNr();
-  // const countdownInterval = countdownETA(randomETA)
   const randomETA = Math.floor(Math.random() * 13) + 7;
   
-
-
-  
   try{
-
   await ordersDb.insert(
     { orders, eta: randomETA, orderNr: orderNumber, timestamp, loggedId: loggedId },
     (err) => {
@@ -222,7 +223,6 @@ app.post("/api/bean/order",  validateOrders, async (req, res) => {
           .json({ error: "Failed to save order to database" });
       }
       
-
       res.json({
         eta: randomETA,
         orderNr: orderNumber,
@@ -230,9 +230,7 @@ app.post("/api/bean/order",  validateOrders, async (req, res) => {
       });
     }
 
-    
   );
-
 
 } catch (error) {
   console.error('Error in POST /api/bean/order:', error);
@@ -242,34 +240,15 @@ app.post("/api/bean/order",  validateOrders, async (req, res) => {
 
 function calculateRemainingTime(order) {
   const { eta, timestamp } = order;
-  console.log("order 0 : ", order);
-  const orderTime = moment(timestamp);
-  console.log("ordertime   :",orderTime);
+   const orderTime = moment(timestamp);
   const currentTime = moment();
-  console.log("NOW   :",currentTime);
-  const elapsedTime = currentTime.diff(orderTime, 'minutes'); // Calculate elapsed time in minutes
-  console.log("Tid gången :",elapsedTime);
-  const remainingTime = Math.max(eta - elapsedTime, 0); // Calculate remaining time in minutes
-  console.log("remaining:",remainingTime);
+  const elapsedTime = currentTime.diff(orderTime, 'minutes'); 
+   const remainingTime = Math.max(eta - elapsedTime, 0); 
 
   return remainingTime;
   
 }
 
-/* const countdownETA = (eta) => {
-  let countdown = eta * 60; // Convert ETA to seconds
-  const interval = setInterval(() => {
-    countdown--;
-    if (countdown <= 0) {
-      clearInterval(interval);
-      console.log('Countdown completed');
-    }
-    // You can send countdown to the frontend here
-    console.log(countdown); // For demonstration, you would send it to frontend instead
-  }, 1000);
-  return interval;
-} */
-// #############################################################################
-//Starta servern
-const server = app.listen(PORT, () =>
-console.log(`Server listening at port ${PORT}...`));
+const server = app.listen(PORT, URL, () => {
+  console.log(`listening to port ${PORT} and running at http://${URL}:${PORT} or http://localhost:${PORT}`);
+});

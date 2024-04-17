@@ -24,7 +24,6 @@ function calculateRemainingTime(order) {
   
     return remainingTime;
   }
-
 module.exports = {
     orderNr,
     calculateRemainingTime

@@ -9,7 +9,6 @@ const { setLoggedId } = require('../utils/loggedUser');
 async function postSignUp (req, res) {
     const { username, password} = req.body;
     const usernameExists = await db.findOne({username: username});
-    console.log(usernameExists)  
     const newSignup = {
       userId: userId,
       username: username,
@@ -40,8 +39,6 @@ async function postLogin (req, res) {
         const loggedUser = await db.find( {username, password}) 
         let loggedId = loggedUser[0].userId; 
         setLoggedId(loggedId); 
-        console.log(newLogin)
-        console.log("loggedId",loggedId)
         res.status(201).json({ success: true })
         
     }catch (e){

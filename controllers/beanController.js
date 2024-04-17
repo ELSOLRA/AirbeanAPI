@@ -14,7 +14,6 @@ async function initializeDatabase() {
                 const data = await fs.readFile('menu.json', 'utf8');
                 const jsonData = JSON.parse(data);
                 const newDoc = await menuDb.insert(jsonData.menu);
-                console.log('Inserted document:', newDoc);
             } catch (err) {
                 console.error('Error reading JSON file or inserting document:', err);
             }
@@ -43,7 +42,7 @@ async function getMenu(req, res) {
     const timestamp = new Date();
     const orderNumber = orderNr();
     const randomETA = Math.floor(Math.random() * 13) + 7;
-    console.log("dsfdsafasfsafsaf",loggedId)
+    
     try{
     await ordersDb.insert(
       { orders, eta: randomETA, orderNr: orderNumber, timestamp, loggedId },
@@ -102,9 +101,7 @@ async function getMenu(req, res) {
     try {
       const orders = await ordersDb.find({ orderNr: orderNr })
       const order = orders[0];
-
       const remainingTime = calculateRemainingTime(order);
-      console.log(remainingTime)
       
         if (order.length === 0) {
           res.status(404).send("order not found");

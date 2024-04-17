@@ -9,7 +9,6 @@ function getLoggedId() {
   return loggedId;
 }
 
-
 module.exports = {
   setLoggedId,
   getLoggedId,

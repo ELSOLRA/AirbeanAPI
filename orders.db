@@ -1,6 +1,0 @@
-{"orders":[{"name":"Cappuccino","price":49}],"eta":13,"orderNr":"LKN2574500","timestamp":{"$$date":1713266812888},"_id":"7HQwSo8CxvrGmLma"}
-{"orders":[{"name":"Cappuccino","price":49},{"name":"Cappuccino","price":49},{"name":"Cappuccino","price":49}],"eta":9,"orderNr":"VZG1693087","timestamp":{"$$date":1713266346967},"loggedId":"1ecb6e14-c2d5-49ea-ad70-cfef249eba46","_id":"8qLSvAmFVCrMxtIm"}
-{"orders":[{"name":"Cappuccino","price":49}],"eta":9,"orderNr":"TFZ2003829","timestamp":{"$$date":1713255088781},"loggedId":"1ecb6e14-c2d5-49ea-ad70-cfef249eba46","_id":"FWpgPsuJQ9kKdu2K"}
-{"orders":[{"name":"Cappuccino","price":49}],"eta":17,"orderNr":"RXC4812386","timestamp":{"$$date":1713254884212},"loggedId":"1ecb6e14-c2d5-49ea-ad70-cfef249eba46","_id":"Im7hXNmQTX3NVaf9"}
-{"orders":[{"name":"Cappuccino","price":49},{"name":"Cappuccino","price":49},{"name":"Cappuccino","price":49}],"eta":8,"orderNr":"OQR7382449","timestamp":{"$$date":1713266189822},"_id":"xJLZEROdPEpiWE6O"}
-{"orders":[{"name":"Cappuccino","price":49},{"name":"Cappuccino","price":49}],"eta":19,"orderNr":"NJB1676580","timestamp":{"$$date":1713257581443},"_id":"zDzHBnztOcLu9fES"}

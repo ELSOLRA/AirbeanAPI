@@ -14,4 +14,3 @@ app.use('/api/user', userRoutes);
 const server = app.listen(PORT, URL, () => {
   console.log(`listening to port ${PORT} and running at http://${URL}:${PORT} or http://localhost:${PORT}`);
 });
-
